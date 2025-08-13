@@ -1,4 +1,8 @@
 // TypeScript types matching FastAPI models
+export interface QueryRequest {
+  query: string;
+}
+
 export interface QueryResponse {
   answer: string;
   data?: Array<Record<string, unknown>> | null;
@@ -69,12 +73,13 @@ export async function uploadFile(file: File): Promise<void> {
 
 // Query data from /query endpoint
 export async function queryData(query: string): Promise<QueryResponse> {
-  // Encode query parameter for URL
-  const encodedQuery = encodeURIComponent(query);
-
   try {
-    const response = await fetch(`${API_BASE_URL}/query?q=${encodedQuery}`, {
-      method: 'GET',
+    const response = await fetch(`${API_BASE_URL}/query`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ query }),
     });
 
     if (!response.ok) {

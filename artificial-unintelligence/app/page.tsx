@@ -8,7 +8,6 @@ export default function Home() {
       <div className="hidden lg:block sticky top-0 h-screen">
         <Sidebar />
       </div>
-      
       {/* Main content - Full width on mobile */}
       <div className="flex-1">
         <ChatInterface />

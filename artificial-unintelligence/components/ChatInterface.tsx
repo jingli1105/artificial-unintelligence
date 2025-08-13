@@ -14,6 +14,7 @@ interface ChatMessage {
   content: string;
   role: 'user' | 'assistant';
   timestamp: Date;
+  rawData?: Array<Record<string, unknown>> | null;
 }
 
 export default function ChatInterface() {
@@ -56,7 +57,8 @@ export default function ChatInterface() {
         id: (Date.now() + 1).toString(),
         content: response.answer,
         role: 'assistant',
-        timestamp: new Date()
+        timestamp: new Date(),
+        rawData: response.data
       };
       
       // Start streaming the response
@@ -105,7 +107,39 @@ export default function ChatInterface() {
       {!isChatMode ? (
         <div className="flex flex-col items-center justify-center flex-1 space-y-8 lg:space-y-12">
           <Greeting name="John" />
-          <FeatureCards />
+          {!uploadedFile && <FeatureCards />}
+          
+          {/* Show uploaded file info and sample questions */}
+          {uploadedFile && (
+            <div className="max-w-2xl w-full space-y-6">
+              {/* File Upload Success */}
+              <div className="flex justify-center">
+                <div className="bg-green-100 border border-green-400 text-green-700 px-6 py-3 rounded-lg flex items-center space-x-3">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 12l2 2 4-4"/>
+                    <circle cx="12" cy="12" r="9"/>
+                  </svg>
+                  <span className="font-medium">File uploaded: {uploadedFile}</span>
+                </div>
+              </div>
+              
+              {/* Sample Questions */}
+              <div className="text-center">
+                <h3 className="text-lg font-semibold text-slate-300 mb-4">Try asking:</h3>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                  {sampleQuestions.map((question, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleSampleQuestion(question)}
+                      className="text-left p-4 bg-slate-700/30 hover:bg-slate-700/50 rounded-lg text-slate-300 transition-colors border border-slate-600/20 hover:border-slate-500/30"
+                    >
+                      {question}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         <div className="flex-1 mx-auto w-full max-w-4xl">
@@ -135,39 +169,7 @@ export default function ChatInterface() {
       )}
       
       {/* Sticky input area at bottom */}
-      <div className="sticky bottom-0 bg-background p-4 ">
-        {uploadedFile && (
-          <div className="mb-4">
-            <div className="flex justify-center mb-4">
-              <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-2 rounded-lg flex items-center space-x-2">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M9 12l2 2 4-4"/>
-                  <circle cx="12" cy="12" r="9"/>
-                </svg>
-                <span className="text-sm">File uploaded: {uploadedFile}</span>
-              </div>
-            </div>
-            
-            {/* Sample Questions - only show if no conversation started */}
-            {!isChatMode && (
-              <div className="max-w-2xl mx-auto">
-                <p className="text-sm text-slate-400 mb-3 text-center">Try asking:</p>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
-                  {sampleQuestions.map((question, index) => (
-                    <button
-                      key={index}
-                      onClick={() => handleSampleQuestion(question)}
-                      className="text-left p-3 bg-slate-700/30 hover:bg-slate-700/50 rounded-lg text-sm text-slate-300 transition-colors"
-                    >
-                      {question}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-        
+      <div className="sticky bottom-0 bg-background p-4">
         <div className="flex justify-center">
           <TabbedInput onSubmit={handleSubmit} onFileUploaded={handleFileUploaded} />
         </div>
