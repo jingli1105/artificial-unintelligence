@@ -8,6 +8,7 @@ import ThinkingIndicator from "./ThinkingIndicator";
 import StreamingChatBubble from "./StreamingChatBubble";
 import { queryData } from "@/lib/api";
 import { Trash2 } from "lucide-react";
+import ExportButton from "./ExportButton";
 
 interface ChatMessage {
   id: string;
@@ -143,15 +144,18 @@ export default function ChatInterface() {
         </div>
       ) : (
         <div className="flex-1 mx-auto w-full max-w-4xl">
-          {/* Clear Chat Button */}
+          {/* Header with Clear Chat and Export Buttons */}
           <div className="flex justify-between items-center mb-4 px-2 lg:px-4">
             <h2 className="text-lg font-semibold text-slate-300">Conversation</h2>
-            <button
-              onClick={clearChat}
-              className="text-sm text-red-400 hover:text-red-300 underline"
-            >
-              <Trash2 className="h-6 w-6 text-red-700"/>
-            </button>
+            <div className="flex items-center space-x-4">
+              <ExportButton messages={messages} uploadedFile={uploadedFile} />
+              <button
+                onClick={clearChat}
+                className="text-sm text-red-400 hover:text-red-300 underline"
+              >
+                <Trash2 className="h-6 w-6 text-red-700"/>
+              </button>
+            </div>
           </div>
           <div className="p-2 lg:p-4 space-y-4">
             {messages.map(message => (
