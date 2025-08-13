@@ -87,7 +87,7 @@ export default function TabbedInput({ onSubmit, onFileUploaded }: TabbedInputPro
             <span className="text-sm text-blue-700">Uploading file...</span>
             <span className="text-sm text-blue-600">{uploadProgress}%</span>
           </div>
-          <Progress value={uploadProgress} className="h-2" />
+          <Progress value={uploadProgress} className="h-2 bg-slate-800/40" />
         </div>
       )}
 
