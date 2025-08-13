@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { uploadFile } from "@/lib/api";
+import { Progress } from "@/components/ui/progress";
 
 interface TabbedInputProps {
   onSubmit: (inputValue: string) => void;
@@ -11,6 +12,8 @@ interface TabbedInputProps {
 export default function TabbedInput({ onSubmit, onFileUploaded }: TabbedInputProps) {
   const [inputValue, setInputValue] = useState("");
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = () => {
@@ -28,20 +31,41 @@ export default function TabbedInput({ onSubmit, onFileUploaded }: TabbedInputPro
     if (!file) return;
 
     setIsUploading(true);
+    setUploadProgress(0);
+    setUploadError(null);
+
+    // Simulate progress for mock uploads
+    const progressInterval = setInterval(() => {
+      setUploadProgress(prev => Math.min(prev + 20, 90));
+    }, 300);
+
     try {
       await uploadFile(file);
-      console.log('File uploaded successfully:', file.name);
-      onFileUploaded?.(file.name);
+      setUploadProgress(100);
+      setTimeout(() => {
+        console.log('File uploaded successfully:', file.name);
+        onFileUploaded?.(file.name);
+        // Reset states
+        setUploadProgress(0);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+      }, 500);
       
-      // Reset file input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
     } catch (error) {
       console.error('Upload failed:', error);
-      alert(`Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setUploadError(error instanceof Error ? error.message : 'Upload failed. Please try again.');
+      setUploadProgress(0);
     } finally {
-      setIsUploading(false);
+      clearInterval(progressInterval);
+      setTimeout(() => setIsUploading(false), 500);
+    }
+  };
+
+  const retryUpload = () => {
+    setUploadError(null);
+    if (fileInputRef.current?.files?.[0]) {
+      handleFileChange({ target: fileInputRef.current } as React.ChangeEvent<HTMLInputElement>);
     }
   };
 
@@ -56,11 +80,37 @@ export default function TabbedInput({ onSubmit, onFileUploaded }: TabbedInputPro
         className="hidden"
       />
 
+      {/* Upload Progress */}
+      {isUploading && (
+        <div className="mb-4 p-3 bg-blue-50 rounded-lg">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm text-blue-700">Uploading file...</span>
+            <span className="text-sm text-blue-600">{uploadProgress}%</span>
+          </div>
+          <Progress value={uploadProgress} className="h-2" />
+        </div>
+      )}
+
+      {/* Upload Error */}
+      {uploadError && (
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-red-700">{uploadError}</span>
+            <button
+              onClick={retryUpload}
+              className="text-sm text-red-600 hover:text-red-800 underline"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Input Field */}
-      <div className="p-4">
+      <div className="p-2 lg:p-4">
         <div className="relative flex items-center">
           <button 
-            className={`absolute left-3 top-1/2 transform -translate-y-1/2 transition-colors cursor-pointer ${
+            className={`absolute left-4 top-1/2 transform -translate-y-1/2 transition-colors cursor-pointer ${
               isUploading 
                 ? 'text-blue-500 cursor-not-allowed' 
                 : 'text-gray-400 hover:text-gray-600'
@@ -91,12 +141,12 @@ export default function TabbedInput({ onSubmit, onFileUploaded }: TabbedInputPro
               }
             }}
             placeholder={`Upload a transcript to get started...`}
-            className="w-full p-3 pl-12 pr-12 border border-gray-800 rounded-full resize-none focus:outline-none focus:ring-2 focus:ring-slate-700 focus:border-transparent text-slate-300 placeholder-gray-500"
+            className="w-full p-3 pl-12 pr-12 border border-gray-800 rounded-full resize-none focus:outline-none focus:ring-2 focus:ring-slate-700 focus:border-transparent text-slate-300 placeholder-gray-500 text-base lg:text-sm"
             rows={1}
           />
           {inputValue.trim() && (
             <button 
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-500 hover:text-blue-600 transition-colors"
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-500 hover:text-slate-600 transition-colors"
               onClick={handleSubmit}
               title="Send message"
             >
